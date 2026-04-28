@@ -1,0 +1,37 @@
+client_name: sample-client
+
+sip:
+  server: sip.example.com
+  username: "100100"
+  password: change-me
+  did: "15551234567"
+
+ivr:
+  timezone: UTC
+  working_hours:
+    - days: mon-fri
+      start: "09:00"
+      end: "18:00"
+    - days: sat
+      start: "10:00"
+      end: "14:00"
+  prompts:
+    open: welcome-open.wav
+    closed: welcome-closed.wav
+    invalid: invalid-option.wav
+  voicemail:
+    mailbox: "1000"
+    pin: "1234"
+    name: Main Mailbox
+  options:
+    - digit: "1"
+      prompt: sales.wav
+      action: transfer
+      target: "15550101"
+    - digit: "2"
+      prompt: support.wav
+      action: transfer
+      target: "15550102"
+    - digit: "3"
+      prompt: voicemail.wav
+      action: voicemail
