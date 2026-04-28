@@ -1,0 +1,6 @@
+generated/
+runtime/
+*.pyc
+__pycache__/
+config/client.yml
+audio/*.wav
