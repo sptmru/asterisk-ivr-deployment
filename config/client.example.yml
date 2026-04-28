@@ -20,9 +20,15 @@ ivr:
     closed: welcome-closed.wav
     invalid: invalid-option.wav
   voicemail:
-    mailbox: "1000"
-    pin: "1234"
-    name: Main Mailbox
+    email: hello@example.com
+    from_name: Sample Client IVR
+    from_email: ivr@example.com
+    smtp:
+      host: smtp.example.com
+      port: 587
+      username: ivr@example.com
+      password: app-password
+      tls: true
   options:
     - digit: "1"
       prompt: sales.wav

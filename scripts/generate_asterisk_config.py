@@ -8,6 +8,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 GENERATED_DIR = ROOT / "generated"
 AUDIO_DIR = ROOT / "audio"
+INTERNAL_MAILBOX = "1000"
+INTERNAL_PIN = "1234"
 
 
 def fail(message: str) -> None:
@@ -164,21 +166,54 @@ line=yes
 """
 
 
-def render_voicemail(mailbox: dict) -> str:
-    mailbox_id = require(mailbox, "mailbox", "ivr.voicemail")
-    pin = require(mailbox, "pin", "ivr.voicemail")
-    name = require(mailbox, "name", "ivr.voicemail")
+def render_voicemail(client_name: str, mailbox: dict) -> str:
+    email = require(mailbox, "email", "ivr.voicemail")
+    from_name = require(mailbox, "from_name", "ivr.voicemail")
+    from_email = require(mailbox, "from_email", "ivr.voicemail")
 
     return f"""[general]
 format=wav
-serveremail=asterisk
-attach=no
+serveremail={from_email}
+fromstring={from_name}
+attach=yes
 skipms=3000
 maxmsg=100
 maxsecs=180
+mailcmd=/usr/bin/msmtp -t
+emailsubject=[{client_name}] New voicemail from ${{VM_CALLERID}}
+emailbody=You received a new voicemail from ${{VM_CALLERID}} on ${{VM_DATE}} at ${{VM_DUR}} seconds.
 
 [default]
-{mailbox_id} => {pin},{name}
+{INTERNAL_MAILBOX} => {INTERNAL_PIN},{client_name},{email}
+"""
+
+
+def render_msmtp(mailbox: dict) -> str:
+    smtp = mailbox.get("smtp")
+    if not isinstance(smtp, dict):
+        fail("Missing required section: ivr.voicemail.smtp")
+
+    host = require(smtp, "host", "ivr.voicemail.smtp")
+    port = require(smtp, "port", "ivr.voicemail.smtp")
+    username = require(smtp, "username", "ivr.voicemail.smtp")
+    password = require(smtp, "password", "ivr.voicemail.smtp")
+    from_email = require(mailbox, "from_email", "ivr.voicemail")
+    tls_enabled = str(smtp.get("tls", True)).lower() in {"1", "true", "yes", "on"}
+    starttls_enabled = "off" if str(port) == "465" else "on"
+
+    return f"""defaults
+auth on
+tls {'on' if tls_enabled else 'off'}
+tls_starttls {starttls_enabled if tls_enabled else 'off'}
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile /var/log/asterisk/msmtp.log
+
+account default
+host {host}
+port {port}
+from {from_email}
+user {username}
+password {password}
 """
 
 
@@ -202,7 +237,6 @@ def render_extensions(config: dict) -> str:
     open_prompt = prompt_basename(require(prompts, "open", "ivr.prompts"))
     closed_prompt = prompt_basename(require(prompts, "closed", "ivr.prompts"))
     invalid_prompt = prompt_basename(require(prompts, "invalid", "ivr.prompts"))
-    mailbox_id = require(voicemail, "mailbox", "ivr.voicemail")
     did = require(sip, "did", "sip")
     time_condition = build_time_condition(ivr["working_hours"])
 
@@ -215,7 +249,7 @@ def render_extensions(config: dict) -> str:
         if option["action"] == "transfer":
             action_lines.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
         else:
-            action_lines.append(f" same => n,VoiceMail({mailbox_id}@default,u)")
+            action_lines.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)")
         action_lines.append(" same => n,Hangup()")
 
     option_branching = "\n".join(option_lines)
@@ -251,7 +285,7 @@ exten => s,1,Answer()
 [ivr-closed]
 exten => s,1,Answer()
  same => n,Playback({closed_prompt})
- same => n,VoiceMail({mailbox_id}@default,u)
+ same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)
  same => n,Hangup()
 
 {option_contexts}
@@ -268,6 +302,17 @@ def validate_config(config: dict) -> None:
         fail("Missing required section: ivr.prompts")
     if "voicemail" not in ivr or not isinstance(ivr["voicemail"], dict):
         fail("Missing required section: ivr.voicemail")
+    validate_options(ivr.get("options", []))
+    require(ivr["voicemail"], "email", "ivr.voicemail")
+    require(ivr["voicemail"], "from_name", "ivr.voicemail")
+    require(ivr["voicemail"], "from_email", "ivr.voicemail")
+    smtp = ivr["voicemail"].get("smtp")
+    if not isinstance(smtp, dict):
+        fail("Missing required section: ivr.voicemail.smtp")
+    require(smtp, "host", "ivr.voicemail.smtp")
+    require(smtp, "port", "ivr.voicemail.smtp")
+    require(smtp, "username", "ivr.voicemail.smtp")
+    require(smtp, "password", "ivr.voicemail.smtp")
 
 
 def write_file(name: str, content: str) -> None:
@@ -287,8 +332,10 @@ def main() -> None:
 
     write_file("pjsip.conf", render_pjsip(config["sip"]))
     write_file("extensions.conf", render_extensions(config))
-    write_file("voicemail.conf", render_voicemail(config["ivr"]["voicemail"]))
+    client_name = str(config.get("client_name", "IVR")).strip() or "IVR"
+    write_file("voicemail.conf", render_voicemail(client_name, config["ivr"]["voicemail"]))
     write_file("logger.conf", render_logger())
+    write_file("msmtprc", render_msmtp(config["ivr"]["voicemail"]))
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ RUN apt-get update \
         asterisk-core-sounds-en-wav \
         asterisk-moh-opsound-wav \
         ca-certificates \
+        msmtp-mta \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/asterisk/modules.conf /etc/asterisk/modules.conf
