@@ -4,6 +4,7 @@ set -euo pipefail
 mkdir -p \
   /var/lib/asterisk \
   /var/lib/asterisk/agi-bin \
+  /var/lib/asterisk/sounds \
   /var/spool/asterisk/voicemail \
   /var/log/asterisk \
   /var/run/asterisk

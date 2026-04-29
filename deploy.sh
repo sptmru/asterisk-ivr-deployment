@@ -94,7 +94,11 @@ else
   COMPOSE_CMD=(docker compose)
 fi
 
-mkdir -p "${ROOT_DIR}/generated" "${ROOT_DIR}/runtime/voicemail" "${ROOT_DIR}/runtime/log"
+mkdir -p \
+  "${ROOT_DIR}/generated" \
+  "${ROOT_DIR}/runtime/lib/sounds" \
+  "${ROOT_DIR}/runtime/voicemail" \
+  "${ROOT_DIR}/runtime/log"
 
 "${ROOT_DIR}/scripts/generate_asterisk_config.py" "${CONFIG_FILE}"
 
