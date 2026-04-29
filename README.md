@@ -92,6 +92,7 @@ voicemail:
 - Prompts must be `.wav` files that Asterisk can play. Standard PCM WAV works best.
 - This project uses `chan_pjsip`.
 - SIP signaling uses UDP 5060 and RTP uses UDP 10000-10100 on the host.
+- The container is granted `NET_ADMIN` because Ubuntu's Asterisk package installs that Linux capability during startup.
 - Inbound routing sends calls to the configured DID when available, with a fallback to `s`.
 - The mailbox number is internal now. The client only fills in the voicemail email and SMTP settings.
 - Use an SMTP account that allows app passwords or relay auth.
