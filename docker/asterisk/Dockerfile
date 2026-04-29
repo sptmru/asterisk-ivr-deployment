@@ -17,6 +17,11 @@ COPY docker/asterisk/rtp.conf /etc/asterisk/rtp.conf
 COPY docker/asterisk/start.sh /start.sh
 
 RUN chmod +x /start.sh \
-    && mkdir -p /var/spool/asterisk/voicemail /var/log/asterisk /var/run/asterisk
+    && mkdir -p \
+        /var/lib/asterisk \
+        /var/lib/asterisk/agi-bin \
+        /var/spool/asterisk/voicemail \
+        /var/log/asterisk \
+        /var/run/asterisk
 
 CMD ["/start.sh"]
