@@ -6,8 +6,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         asterisk \
         asterisk-core-sounds-en-wav \
+        asterisk-modules \
         asterisk-moh-opsound-wav \
-        asterisk-voicemail \
         ca-certificates \
         msmtp-mta \
     && rm -rf /var/lib/apt/lists/*
