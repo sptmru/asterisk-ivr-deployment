@@ -383,19 +383,23 @@ def render_extensions(config: dict) -> str:
     time_condition = build_time_condition(ivr["working_hours"])
     timeout_seconds = optional_positive_int(ivr, "timeout_seconds", "ivr", 10)
 
-    option_lines = []
+    option_extensions = []
     action_lines = []
     for option in options:
-        option_lines.append(f'same => n,GotoIf($["${{IVR_DIGIT}}" = "{option["digit"]}"]?option-{option["digit"]},s,1)')
-        action_lines.append(f"[option-{option['digit']}]\nexten => s,1,NoOp(Option {option['digit']})")
-        action_lines.append(f" same => n,Playback({option['prompt']})")
+        option_extensions.append(f"exten => {option['digit']},1,Goto(option-{option['digit']},s,1)")
+        action_context = [
+            f"[option-{option['digit']}]",
+            f"exten => s,1,NoOp(Option {option['digit']})",
+            f" same => n,Playback({option['prompt']})",
+        ]
         if option["action"] == "transfer":
-            action_lines.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
+            action_context.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
         else:
-            action_lines.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)")
-        action_lines.append(" same => n,Hangup()")
+            action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)")
+        action_context.append(" same => n,Hangup()")
+        action_lines.append("\n".join(action_context))
 
-    option_branching = "\n".join(option_lines)
+    ivr_options = "\n".join(option_extensions)
     option_contexts = "\n\n".join(action_lines)
 
     return f"""[general]
@@ -419,11 +423,12 @@ exten => s,1,NoOp(Incoming IVR call)
 
 [ivr-open]
 exten => s,1,Answer()
- same => n,Playback({open_prompt})
- same => n,Read(IVR_DIGIT,,1,,2,{timeout_seconds})
-{option_branching}
- same => n,Playback({invalid_prompt})
- same => n,Goto(ivr-open,s,2)
+ same => n,Background({open_prompt})
+ same => n,WaitExten({timeout_seconds})
+{ivr_options}
+exten => i,1,Playback({invalid_prompt})
+ same => n,Goto(s,2)
+exten => t,1,Goto(s,2)
 
 [ivr-closed]
 exten => s,1,Answer()
