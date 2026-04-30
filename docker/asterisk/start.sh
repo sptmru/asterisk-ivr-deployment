@@ -15,7 +15,7 @@ mkdir -p \
   /var/log/asterisk \
   /var/run/asterisk
 
-chown -R root:root \
+chown -R asterisk:asterisk \
   /var/lib/asterisk \
   /var/spool/asterisk/voicemail \
   /var/log/asterisk \
