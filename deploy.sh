@@ -108,7 +108,8 @@ run_as_root chmod -R u+rwX,g+rwX,o+rwX \
 chmod 600 "${ROOT_DIR}/generated/msmtprc"
 
 cd "${ROOT_DIR}"
-"${COMPOSE_CMD[@]}" up -d --build --force-recreate
+"${COMPOSE_CMD[@]}" build --no-cache asterisk
+"${COMPOSE_CMD[@]}" up -d --force-recreate
 
 echo
 echo "Asterisk IVR is starting."
