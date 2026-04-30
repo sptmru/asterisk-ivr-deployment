@@ -15,7 +15,7 @@ services:
       - ./generated/logger.conf:/etc/asterisk/logger.conf:ro
       - ./generated/msmtprc:/etc/msmtprc:ro
       - ./runtime/lib:/var/lib/asterisk
-      - ./audio:/var/lib/asterisk/sounds/custom:ro
+      - ./audio:/usr/share/asterisk/sounds/custom:ro
       - ./runtime/voicemail:/var/spool/asterisk/voicemail
       - ./runtime/log:/var/log/asterisk
     healthcheck:

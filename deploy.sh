@@ -96,7 +96,7 @@ fi
 
 mkdir -p \
   "${ROOT_DIR}/generated" \
-  "${ROOT_DIR}/runtime/lib/sounds" \
+  "${ROOT_DIR}/runtime/lib" \
   "${ROOT_DIR}/runtime/voicemail" \
   "${ROOT_DIR}/runtime/log"
 
