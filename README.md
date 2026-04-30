@@ -2,6 +2,10 @@
 
 This repository provides a simple, client-configurable IVR deployment for Ubuntu 24.04.
 
+For a step-by-step guide written for a non-technical operator, including SSH, cloning this repository, uploading audio files, editing the config, and running the deployment, see [NON_TECHNICAL_GUIDE.md](NON_TECHNICAL_GUIDE.md).
+
+For a Windows client workflow that uses `key.txt` beside a PowerShell script to connect to the server and run the deployment, see [WINDOWS_CLIENT_GUIDE.md](WINDOWS_CLIENT_GUIDE.md).
+
 The workflow is:
 
 1. Put the client YAML file in `config/client.yml`.

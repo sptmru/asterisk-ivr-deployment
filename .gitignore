@@ -4,3 +4,4 @@ runtime/
 __pycache__/
 config/client.yml
 audio/*.wav
+key.txt
