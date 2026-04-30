@@ -15,6 +15,12 @@ mkdir -p \
   /var/log/asterisk \
   /var/run/asterisk
 
+if [[ -f /etc/msmtprc.generated ]]; then
+  cp /etc/msmtprc.generated /etc/msmtprc
+  chown asterisk:asterisk /etc/msmtprc
+  chmod 600 /etc/msmtprc
+fi
+
 chown -R asterisk:asterisk \
   /var/lib/asterisk \
   /var/spool/asterisk/voicemail \

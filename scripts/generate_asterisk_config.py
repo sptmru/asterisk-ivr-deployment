@@ -321,7 +321,7 @@ attach=yes
 skipms=3000
 maxmsg=100
 maxsecs=180
-mailcmd=/usr/bin/msmtp -t
+mailcmd=/usr/bin/msmtp --file=/etc/msmtprc -t
 emailsubject=[{client_name}] New voicemail from ${{VM_CALLERID}}
 emailbody=You received a new voicemail from ${{VM_CALLERID}} on ${{VM_DATE}} at ${{VM_DUR}} seconds.
 
@@ -395,7 +395,7 @@ def render_extensions(config: dict) -> str:
         if option["action"] == "transfer":
             action_context.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
         else:
-            action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)")
+            action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)")
         action_context.append(" same => n,Hangup()")
         action_lines.append("\n".join(action_context))
 
@@ -433,7 +433,7 @@ exten => t,1,Goto(s,2)
 [ivr-closed]
 exten => s,1,Answer()
  same => n,Playback({closed_prompt})
- same => n,VoiceMail({INTERNAL_MAILBOX}@default,u)
+ same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)
  same => n,Hangup()
 
 {option_contexts}

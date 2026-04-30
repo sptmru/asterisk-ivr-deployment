@@ -106,3 +106,4 @@ voicemail:
 - Inbound routing sends calls to the configured DID when available, with a fallback to `s`.
 - The mailbox number is internal now. The client only fills in the voicemail email and SMTP settings.
 - Use an SMTP account that allows app passwords or relay auth.
+- Voicemail email delivery uses `msmtp`; SMTP delivery failures are written inside the container to `/var/log/asterisk/msmtp.log`, which is mounted at `runtime/log/msmtp.log` on the host.

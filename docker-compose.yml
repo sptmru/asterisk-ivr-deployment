@@ -13,7 +13,7 @@ services:
       - ./generated/extensions.conf:/etc/asterisk/extensions.conf:ro
       - ./generated/voicemail.conf:/etc/asterisk/voicemail.conf:ro
       - ./generated/logger.conf:/etc/asterisk/logger.conf:ro
-      - ./generated/msmtprc:/etc/msmtprc:ro
+      - ./generated/msmtprc:/etc/msmtprc.generated:ro
       - ./runtime/lib:/var/lib/asterisk
       - ./generated/audio:/usr/share/asterisk/sounds/custom:ro
       - asterisk-voicemail:/var/spool/asterisk/voicemail
