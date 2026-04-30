@@ -7,6 +7,7 @@ RUN apt-get update \
         asterisk \
         asterisk-core-sounds-en-wav \
         asterisk-moh-opsound-wav \
+        asterisk-voicemail \
         ca-certificates \
         msmtp-mta \
     && rm -rf /var/lib/apt/lists/*
