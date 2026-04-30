@@ -348,6 +348,7 @@ auth on
 tls {'on' if tls_enabled else 'off'}
 tls_starttls {starttls_enabled if tls_enabled else 'off'}
 tls_trust_file /etc/ssl/certs/ca-certificates.crt
+tls_certcheck off
 logfile /var/log/asterisk/msmtp.log
 
 account default
