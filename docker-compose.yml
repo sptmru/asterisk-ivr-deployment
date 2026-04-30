@@ -16,10 +16,13 @@ services:
       - ./generated/msmtprc:/etc/msmtprc:ro
       - ./runtime/lib:/var/lib/asterisk
       - ./generated/audio:/usr/share/asterisk/sounds/custom:ro
-      - ./runtime/voicemail:/var/spool/asterisk/voicemail
+      - asterisk-voicemail:/var/spool/asterisk/voicemail
       - ./runtime/log:/var/log/asterisk
     healthcheck:
       test: ["CMD", "asterisk", "-rx", "core show uptime"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+volumes:
+  asterisk-voicemail:

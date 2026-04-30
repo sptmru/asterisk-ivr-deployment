@@ -99,18 +99,16 @@ mkdir -p \
   "${ROOT_DIR}/generated" \
   "${ROOT_DIR}/generated/audio" \
   "${ROOT_DIR}/runtime/lib" \
-  "${ROOT_DIR}/runtime/voicemail/default/1000/tmp" \
   "${ROOT_DIR}/runtime/log"
 run_as_root chmod -R u+rwX,g+rwX,o+rwX \
   "${ROOT_DIR}/runtime/lib" \
-  "${ROOT_DIR}/runtime/voicemail" \
   "${ROOT_DIR}/runtime/log"
 
 "${ROOT_DIR}/scripts/generate_asterisk_config.py" "${CONFIG_FILE}"
 chmod 600 "${ROOT_DIR}/generated/msmtprc"
 
 cd "${ROOT_DIR}"
-"${COMPOSE_CMD[@]}" up -d --build
+"${COMPOSE_CMD[@]}" up -d --build --force-recreate
 
 echo
 echo "Asterisk IVR is starting."
