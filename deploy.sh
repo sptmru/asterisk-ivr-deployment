@@ -78,6 +78,7 @@ fi
 
 install_package_if_missing python3 python3
 ensure_python_yaml
+install_package_if_missing ffmpeg ffmpeg
 install_package_if_missing docker docker.io
 ensure_docker_running
 ensure_docker_group
@@ -96,6 +97,7 @@ fi
 
 mkdir -p \
   "${ROOT_DIR}/generated" \
+  "${ROOT_DIR}/generated/audio" \
   "${ROOT_DIR}/runtime/lib" \
   "${ROOT_DIR}/runtime/voicemail" \
   "${ROOT_DIR}/runtime/log"

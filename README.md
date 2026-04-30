@@ -5,20 +5,22 @@ This repository provides a simple, client-configurable IVR deployment for Ubuntu
 The workflow is:
 
 1. Put the client YAML file in `config/client.yml`.
-2. Put referenced WAV files in `audio/`.
+2. Put referenced audio files in `audio/`.
 3. Run `./deploy.sh`.
 
 The deploy script:
 
-1. Installs Docker, Docker Compose, and `python3-yaml` on Ubuntu 24.04 if they are missing.
-2. Generates Asterisk configuration from the YAML file.
-3. Builds the Docker image.
-4. Starts Asterisk with the generated IVR.
+1. Installs Docker, Docker Compose, `python3-yaml`, and `ffmpeg` on Ubuntu 24.04 if they are missing.
+2. Detects referenced audio formats and converts prompts when needed.
+3. Generates Asterisk configuration from the YAML file.
+4. Builds the Docker image.
+5. Starts Asterisk with the generated IVR.
 
 ## Layout
 
 - `config/client.example.yml`: sample client configuration
-- `audio/`: WAV prompts referenced by the YAML
+- `audio/`: source prompts referenced by the YAML
+- `generated/audio/`: Asterisk-ready prompts generated from `audio/`
 - `scripts/generate_asterisk_config.py`: renders Asterisk config files
 - `docker/asterisk/`: container image assets
 - `generated/`: generated Asterisk config files
@@ -33,7 +35,7 @@ Copy the example config:
 cp config/client.example.yml config/client.yml
 ```
 
-Add the WAV files referenced by the config into `audio/`.
+Add the audio files referenced by the config into `audio/`.
 
 Generate and start the stack:
 
@@ -89,7 +91,8 @@ voicemail:
 
 ## Notes
 
-- Prompts must be `.wav` files that Asterisk can play. Standard PCM WAV works best.
+- Prompts can be common audio files such as WAV, MP3, M4A, FLAC, or OGG. `./deploy.sh` converts them into Asterisk-ready 8 kHz mono PCM WAV files under `generated/audio/`.
+- Prompt filenames must be unique after removing the extension. For example, do not reference both `welcome.mp3` and `welcome.wav`.
 - This project uses `chan_pjsip`.
 - SIP signaling uses UDP 5060 and RTP uses UDP 10000-10100 on the host.
 - The container is granted `NET_ADMIN` because Ubuntu's Asterisk package installs that Linux capability during startup.

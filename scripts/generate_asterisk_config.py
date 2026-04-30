@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+import json
+import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -7,9 +11,12 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 GENERATED_DIR = ROOT / "generated"
+GENERATED_AUDIO_DIR = GENERATED_DIR / "audio"
 AUDIO_DIR = ROOT / "audio"
 INTERNAL_MAILBOX = "1000"
 INTERNAL_PIN = "1234"
+REGISTERED_PROMPTS = {}
+OUTPUT_NAMES = {}
 
 
 def fail(message: str) -> None:
@@ -38,15 +45,139 @@ def require(mapping: dict, key: str, path: str) -> str:
     return str(value)
 
 
-def prompt_basename(filename: str) -> str:
-    if not filename.lower().endswith(".wav"):
-        fail(f"Prompt must be a .wav file: {filename}")
+def safe_audio_stem(filename: str) -> str:
+    stem = Path(filename).stem.strip().lower()
+    stem = re.sub(r"[^a-z0-9_-]+", "-", stem).strip("-")
+    return stem or "prompt"
 
-    prompt_path = AUDIO_DIR / filename
+
+def prompt_path_for(filename: str) -> Path:
+    relative_path = Path(filename)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        fail(f"Prompt must be a file inside the audio directory: {filename}")
+
+    prompt_path = AUDIO_DIR / relative_path
     if not prompt_path.is_file():
         fail(f"Referenced audio file not found: {prompt_path}")
+    return prompt_path
 
-    return f"custom/{prompt_path.stem}"
+
+def prompt_basename(filename: str) -> str:
+    prompt_path = prompt_path_for(filename)
+    source_key = str(prompt_path.resolve())
+
+    if source_key not in REGISTERED_PROMPTS:
+        safe_stem = safe_audio_stem(filename)
+        output_name = f"{safe_stem}.wav"
+        existing_source = OUTPUT_NAMES.get(output_name)
+        if existing_source and existing_source != source_key:
+            fail(
+                "Audio filenames must be unique after conversion: "
+                f"{filename} conflicts with {Path(existing_source).name}"
+            )
+        OUTPUT_NAMES[output_name] = source_key
+        REGISTERED_PROMPTS[source_key] = {
+            "source": prompt_path,
+            "output": GENERATED_AUDIO_DIR / output_name,
+            "playback": f"custom/{safe_stem}",
+        }
+
+    return REGISTERED_PROMPTS[source_key]["playback"]
+
+
+def probe_audio(prompt_path: Path) -> dict:
+    if not shutil.which("ffprobe"):
+        fail("Missing required command: ffprobe. Install ffmpeg or run ./deploy.sh.")
+
+    command = [
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        "a:0",
+        "-show_entries",
+        "stream=codec_name,sample_rate,channels",
+        "-show_entries",
+        "format=format_name",
+        "-of",
+        "json",
+        str(prompt_path),
+    ]
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as exc:
+        message = exc.stderr.strip() or exc.stdout.strip() or str(exc)
+        fail(f"Could not read audio format for {prompt_path}: {message}")
+
+    data = json.loads(result.stdout or "{}")
+    streams = data.get("streams") or []
+    if not streams:
+        fail(f"No audio stream found in {prompt_path}")
+
+    return {
+        "stream": streams[0],
+        "format": data.get("format", {}),
+    }
+
+
+def is_asterisk_wav(prompt_path: Path, metadata: dict) -> bool:
+    stream = metadata["stream"]
+    format_name = str(metadata["format"].get("format_name", ""))
+    return (
+        prompt_path.suffix.lower() == ".wav"
+        and "wav" in format_name.split(",")
+        and stream.get("codec_name") == "pcm_s16le"
+        and str(stream.get("sample_rate")) == "8000"
+        and int(stream.get("channels") or 0) == 1
+    )
+
+
+def convert_audio_prompts() -> None:
+    if not REGISTERED_PROMPTS:
+        return
+
+    if not shutil.which("ffmpeg"):
+        fail("Missing required command: ffmpeg. Install ffmpeg or run ./deploy.sh.")
+
+    GENERATED_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+
+    for prompt in REGISTERED_PROMPTS.values():
+        source = prompt["source"]
+        output = prompt["output"]
+        metadata = probe_audio(source)
+        needs_update = not output.exists() or source.stat().st_mtime > output.stat().st_mtime
+
+        if is_asterisk_wav(source, metadata):
+            if needs_update:
+                shutil.copy2(source, output)
+            print(f"Audio OK: {source.name} -> {output.name}")
+            continue
+
+        if not needs_update:
+            print(f"Audio already converted: {source.name} -> {output.name}")
+            continue
+
+        print(f"Converting audio: {source.name} -> {output.name}")
+        command = [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            str(source),
+            "-ac",
+            "1",
+            "-ar",
+            "8000",
+            "-c:a",
+            "pcm_s16le",
+            str(output),
+        ]
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as exc:
+            fail(f"Could not convert audio file {source}: {exc}")
 
 
 def validate_options(options: list) -> list:
@@ -302,6 +433,10 @@ def validate_config(config: dict) -> None:
         fail("Missing required section: ivr.prompts")
     if "voicemail" not in ivr or not isinstance(ivr["voicemail"], dict):
         fail("Missing required section: ivr.voicemail")
+    prompts = ivr["prompts"]
+    prompt_basename(require(prompts, "open", "ivr.prompts"))
+    prompt_basename(require(prompts, "closed", "ivr.prompts"))
+    prompt_basename(require(prompts, "invalid", "ivr.prompts"))
     validate_options(ivr.get("options", []))
     require(ivr["voicemail"], "email", "ivr.voicemail")
     require(ivr["voicemail"], "from_name", "ivr.voicemail")
@@ -329,6 +464,7 @@ def main() -> None:
     config_path = Path(sys.argv[1]).resolve()
     config = load_config(config_path)
     validate_config(config)
+    convert_audio_prompts()
 
     write_file("pjsip.conf", render_pjsip(config["sip"]))
     write_file("extensions.conf", render_extensions(config))
