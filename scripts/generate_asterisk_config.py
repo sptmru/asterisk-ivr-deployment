@@ -45,6 +45,17 @@ def require(mapping: dict, key: str, path: str) -> str:
     return str(value)
 
 
+def optional_positive_int(mapping: dict, key: str, path: str, default: int) -> int:
+    value = mapping.get(key, default)
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        fail(f"{path}.{key} must be a positive number")
+    if parsed < 1:
+        fail(f"{path}.{key} must be a positive number")
+    return parsed
+
+
 def safe_audio_stem(filename: str) -> str:
     stem = Path(filename).stem.strip().lower()
     stem = re.sub(r"[^a-z0-9_-]+", "-", stem).strip("-")
@@ -370,6 +381,7 @@ def render_extensions(config: dict) -> str:
     invalid_prompt = prompt_basename(require(prompts, "invalid", "ivr.prompts"))
     did = require(sip, "did", "sip")
     time_condition = build_time_condition(ivr["working_hours"])
+    timeout_seconds = optional_positive_int(ivr, "timeout_seconds", "ivr", 10)
 
     option_lines = []
     action_lines = []
@@ -408,7 +420,7 @@ exten => s,1,NoOp(Incoming IVR call)
 [ivr-open]
 exten => s,1,Answer()
  same => n,Playback({open_prompt})
- same => n,Read(IVR_DIGIT,,1,,2,5)
+ same => n,Read(IVR_DIGIT,,1,,2,{timeout_seconds})
 {option_branching}
  same => n,Playback({invalid_prompt})
  same => n,Goto(ivr-open,s,2)

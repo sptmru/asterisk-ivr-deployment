@@ -58,6 +58,7 @@ The config supports:
 - SIP registration data: provider server, username, password, DID
 - Two greetings: working-hours and closed-hours
 - One or more working-hour windows
+- A configurable timeout for how long callers have to press an IVR option
 - Up to five IVR options
 - Each option can transfer to a phone number or send the caller to voicemail
 - Voicemail delivery by email through an SMTP account
@@ -72,6 +73,12 @@ working_hours:
   - days: sat
     start: "10:00"
     end: "14:00"
+```
+
+IVR digit timeout format:
+
+```yaml
+timeout_seconds: 10
 ```
 
 Voicemail email format:
