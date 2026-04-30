@@ -8,7 +8,7 @@ sip:
 
 ivr:
   timezone: UTC
-  timeout_seconds: 10
+  timeout_seconds: 30
   working_hours:
     - days: mon-fri
       start: "09:00"
