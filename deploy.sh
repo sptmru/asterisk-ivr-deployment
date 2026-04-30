@@ -103,6 +103,7 @@ mkdir -p \
   "${ROOT_DIR}/runtime/log"
 
 "${ROOT_DIR}/scripts/generate_asterisk_config.py" "${CONFIG_FILE}"
+chmod 600 "${ROOT_DIR}/generated/msmtprc"
 
 cd "${ROOT_DIR}"
 "${COMPOSE_CMD[@]}" up -d --build
