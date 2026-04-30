@@ -36,4 +36,4 @@ stat -c "%U:%G %a %n" \
   /var/spool/asterisk/voicemail/default/1000 \
   /var/spool/asterisk/voicemail/default/1000/tmp
 
-exec /usr/sbin/asterisk -f -U root -G root -vvv
+exec /usr/sbin/asterisk -f -U asterisk -G asterisk -vvv
