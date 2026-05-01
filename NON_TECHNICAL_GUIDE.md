@@ -44,6 +44,7 @@ Ask your server provider, phone provider, or technical contact for these details
   - `welcome-open.wav`
   - `welcome-closed.wav`
   - `invalid-option.wav`
+  - `timeout.wav`
   - `sales.wav`
   - `support.wav`
   - `voicemail.wav`
@@ -158,6 +159,7 @@ ivr:
     open: welcome-open.wav
     closed: welcome-closed.wav
     invalid: invalid-option.wav
+    timeout: timeout.wav
   voicemail:
     email: hello@example.com
     from_name: Sample Client IVR
@@ -230,6 +232,7 @@ prompts:
   open: welcome-open.wav
   closed: welcome-closed.wav
   invalid: invalid-option.wav
+  timeout: timeout.wav
 ```
 
 These filenames must match the files you will upload into the `audio/` folder.

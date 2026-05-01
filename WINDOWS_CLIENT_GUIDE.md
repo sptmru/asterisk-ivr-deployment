@@ -17,6 +17,7 @@ asterisk-ivr-deployment/
     welcome-open.wav
     welcome-closed.wav
     invalid-option.wav
+    timeout.wav
     sales.wav
     support.wav
     voicemail.wav

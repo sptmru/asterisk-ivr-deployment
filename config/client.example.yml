@@ -20,6 +20,7 @@ ivr:
     open: welcome-open.wav
     closed: welcome-closed.wav
     invalid: invalid-option.wav
+    timeout: timeout.wav
   voicemail:
     email: hello@example.com
     from_name: Sample Client IVR

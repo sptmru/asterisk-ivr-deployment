@@ -380,6 +380,7 @@ def render_extensions(config: dict) -> str:
     open_prompt = prompt_basename(require(prompts, "open", "ivr.prompts"))
     closed_prompt = prompt_basename(require(prompts, "closed", "ivr.prompts"))
     invalid_prompt = prompt_basename(require(prompts, "invalid", "ivr.prompts"))
+    timeout_prompt = prompt_basename(require(prompts, "timeout", "ivr.prompts"))
     did = require(sip, "did", "sip")
     time_condition = build_time_condition(ivr["working_hours"])
     timeout_seconds = optional_positive_int(ivr, "timeout_seconds", "ivr", 10)
@@ -429,7 +430,9 @@ exten => s,1,Answer()
 {ivr_options}
 exten => i,1,Playback({invalid_prompt})
  same => n,Goto(s,2)
-exten => t,1,Goto(s,2)
+exten => t,1,Playback({timeout_prompt})
+ same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)
+ same => n,Hangup()
 
 [ivr-closed]
 exten => s,1,Answer()
@@ -455,6 +458,7 @@ def validate_config(config: dict) -> None:
     prompt_basename(require(prompts, "open", "ivr.prompts"))
     prompt_basename(require(prompts, "closed", "ivr.prompts"))
     prompt_basename(require(prompts, "invalid", "ivr.prompts"))
+    prompt_basename(require(prompts, "timeout", "ivr.prompts"))
     validate_options(ivr.get("options", []))
     require(ivr["voicemail"], "email", "ivr.voicemail")
     require(ivr["voicemail"], "from_name", "ivr.voicemail")
