@@ -213,14 +213,14 @@ def validate_options(options: list) -> list:
             fail(f"ivr.options[{index}].digit must be one digit 0-9")
         seen_digits.add(digit)
 
-        if action not in {"transfer", "voicemail"}:
-            fail(f"ivr.options[{index}].action must be transfer or voicemail")
+        if action not in {"transfer", "voicemail", "play"}:
+            fail(f"ivr.options[{index}].action must be transfer, voicemail, or play")
 
         target = str(option.get("target", "")).strip()
         if action == "transfer" and not target:
             fail(f"ivr.options[{index}].target is required for transfer")
-        if action == "voicemail" and target:
-            fail(f"ivr.options[{index}].target is not used for voicemail")
+        if action in {"voicemail", "play"} and target:
+            fail(f"ivr.options[{index}].target is not used for {action}")
 
         normalized.append(
             {
@@ -396,6 +396,10 @@ def render_extensions(config: dict) -> str:
         ]
         if option["action"] == "transfer":
             action_context.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
+        elif option["action"] == "play":
+            action_context.append(f" same => n,Wait({timeout_seconds})")
+            action_context.append(f" same => n,Playback({timeout_prompt})")
+            action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)")
         else:
             action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)")
         action_context.append(" same => n,Hangup()")

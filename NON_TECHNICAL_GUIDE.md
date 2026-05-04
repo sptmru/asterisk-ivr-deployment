@@ -48,6 +48,7 @@ Ask your server provider, phone provider, or technical contact for these details
   - `sales.wav`
   - `support.wav`
   - `voicemail.wav`
+  - `callback-message.wav`
 
 The audio files may be WAV, MP3, M4A, FLAC, or OGG. The deploy script converts them automatically.
 
@@ -182,6 +183,9 @@ ivr:
     - digit: "3"
       prompt: voicemail.wav
       action: voicemail
+    - digit: "4"
+      prompt: callback-message.wav
+      action: play
 ```
 
 ### What to Change
@@ -267,6 +271,9 @@ options:
   - digit: "3"
     prompt: voicemail.wav
     action: voicemail
+  - digit: "4"
+    prompt: callback-message.wav
+    action: play
 ```
 
 For a transfer option:
@@ -282,6 +289,14 @@ For a voicemail option:
 - `prompt` is the audio file that explains the option
 - `action` should be `voicemail`
 - there is no `target`
+
+For a play option:
+
+- `digit` is what the caller presses
+- `prompt` is the audio file to play before waiting
+- `action` should be `play`
+- there is no `target`
+- after the prompt, the system waits for `timeout_seconds`, plays the timeout prompt, and records voicemail
 
 ### How to Save in Nano
 

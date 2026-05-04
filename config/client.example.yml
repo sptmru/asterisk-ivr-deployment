@@ -43,3 +43,6 @@ ivr:
     - digit: "3"
       prompt: voicemail.wav
       action: voicemail
+    - digit: "4"
+      prompt: callback-message.wav
+      action: play

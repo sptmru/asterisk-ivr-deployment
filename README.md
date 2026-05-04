@@ -64,7 +64,7 @@ The config supports:
 - One or more working-hour windows
 - A configurable timeout for how long callers have to press an IVR option, followed by a timeout prompt and voicemail
 - Up to five IVR options
-- Each option can transfer to a phone number or send the caller to voicemail
+- Each option can transfer to a phone number, send the caller to voicemail, or play a prompt before timing out to voicemail
 - Voicemail delivery by email through an SMTP account
 
 Supported schedule format:

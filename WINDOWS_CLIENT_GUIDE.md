@@ -21,6 +21,7 @@ asterisk-ivr-deployment/
     sales.wav
     support.wav
     voicemail.wav
+    callback-message.wav
 ```
 
 `key.txt` must contain the private SSH key for the server.
@@ -161,6 +162,7 @@ Then call the phone number and test:
 - open-hours greeting
 - each keypad option
 - transfer phone numbers
+- play-only prompts that wait and then go to voicemail
 - voicemail email delivery
 - closed-hours voicemail behavior
 
