@@ -397,7 +397,7 @@ def render_extensions(config: dict) -> str:
         if option["action"] == "transfer":
             action_context.append(f" same => n,Dial(PJSIP/{option['target']}@provider-endpoint,30)")
         elif option["action"] == "play":
-            action_context.append(f" same => n,Wait({timeout_seconds})")
+            action_context.append(f" same => n,MusicOnHold(default,{timeout_seconds})")
             action_context.append(f" same => n,Playback({timeout_prompt})")
             action_context.append(f" same => n,VoiceMail({INTERNAL_MAILBOX}@default,s)")
         else:

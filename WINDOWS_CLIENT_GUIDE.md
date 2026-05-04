@@ -162,7 +162,7 @@ Then call the phone number and test:
 - open-hours greeting
 - each keypad option
 - transfer phone numbers
-- play-only prompts that wait and then go to voicemail
+- play-only prompts that play hold music and then go to voicemail
 - voicemail email delivery
 - closed-hours voicemail behavior
 

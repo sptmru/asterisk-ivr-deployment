@@ -296,7 +296,7 @@ For a play option:
 - `prompt` is the audio file to play before waiting
 - `action` should be `play`
 - there is no `target`
-- after the prompt, the system waits for `timeout_seconds`, plays the timeout prompt, and records voicemail
+- after the prompt, the system plays hold music for `timeout_seconds`, plays the timeout prompt, and records voicemail
 
 ### How to Save in Nano
 
