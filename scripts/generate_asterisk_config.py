@@ -284,6 +284,7 @@ aors=provider-aor
 from_user={username}
 from_domain={server}
 direct_media=no
+dtmf_mode=inband
 rewrite_contact=yes
 rtp_symmetric=yes
 force_rport=yes
